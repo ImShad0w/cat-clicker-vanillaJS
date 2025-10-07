@@ -10,6 +10,7 @@ const cats = [
 ];
 
 let id = 0;
+
 cats.forEach((cat) => {
   //Create the elements
   const name = document.createElement("h1");
@@ -56,3 +57,39 @@ catDiv.addEventListener("click", (event) => {
     catShow.appendChild(img);
   }
 });
+
+//MVC part
+
+//Model part
+class CatModel {
+  constructor() {
+    this.cats = [];
+  }
+  getAllCats() {
+    return this.cats;
+  }
+  updateCat() {
+    //TODO: Get the new info and update the cat accordingly
+  }
+}
+
+//View part
+class CatView {
+  renderCats() {}
+  getUserData() {
+    //Data we will use in the future to change the properties of a cat
+  }
+}
+//Controller Part
+class CatController {
+  constructor(model, view) {
+    this.model = model;
+    this.view = view;
+  }
+  showCats() {
+    //TODO: Get the array and render the cats
+  }
+  changeCat() {
+    //TODO: Update the cat and then render the new cats
+  }
+}
