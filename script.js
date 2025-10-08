@@ -1,47 +1,74 @@
-const catDiv = document.getElementById("catclicker");
-const catShow = document.getElementById("catImg");
+//Model part
+class CatModel {
+  constructor() {
+    this.cats = [
+      { image: "./images/xuxa_the_kitten.jpg", name: "Xuxa", counter: 0 },
+      { image: "./images/fluffy_cat.jpg", name: "Fluffy", counter: 0 },
+      { image: "./images/browny.jpg", name: "Browny", counter: 0 },
+      { image: "./images/grayish.jpg", name: "Grayish", counter: 0 },
+      { image: "./images/oreo.jpg", name: "Oreo", counter: 0 },
+    ];
+    this.selectedCat = null;
+  }
 
-const cats = [
-  { image: "./images/xuxa_the_kitten.jpg", name: "Xuxa", counter: 0 },
-  { image: "./images/fluffy_cat.jpg", name: "Fluffy", counter: 0 },
-  { image: "./images/browny.jpg", name: "Browny", counter: 0 },
-  { image: "./images/grayish.jpg", name: "Grayish", counter: 0 },
-  { image: "./images/oreo.jpg", name: "Oreo", counter: 0 },
-];
+  getAllCats() {
+    return this.cats;
+  }
 
-let id = 0;
+  getCat(index) {
+    return this.cats[index];
+  }
 
-cats.forEach((cat) => {
-  //Create the elements
-  const name = document.createElement("h1");
-  const catItem = document.createElement("li");
+  setSelectedCat(index) {
+    this.selectedCat = this.cats[index];
+  }
 
-  //Add styles and text
-  catItem.classList.add("cat");
-  name.textContent = cat.name;
-  catItem.dataset.id = id++;
+  incrementCounter() {
+    if (this.selectedCat) {
+      this.selectedCat.counter++;
+    }
+  }
 
-  //Append all elements
-  catItem.appendChild(name);
-  catDiv.appendChild(catItem);
-});
+  getSelectedCat() {
+    return this.selectedCat;
+  }
+}
 
-catDiv.addEventListener("click", (event) => {
-  // Find the closest `.cat` element to whatever was clicked
-  const catItem = event.target.closest(".cat");
-  if (!catItem) return; // Clicked outside a cat item
+//View part
+class CatView {
+  constructor() {
+    this.catListDiv = document.getElementById("catclicker");
+    this.catShow = document.getElementById("catImg");
+  }
 
-  // Make sure the click was on an text
-  if (event.target.tagName === "H1") {
-    const catId = Number(catItem.dataset.id);
-    const cat = cats[catId];
+  renderCatList(cats, onCatSelected) {
+    this.catListDiv.innerHTML = "";
+    cats.forEach((cat, index) => {
+      const name = document.createElement("h1");
+      name.textContent = cat.name;
+
+      const catItem = document.createElement("li");
+      catItem.classList.add("cat");
+      catItem.dataset.id = index;
+
+      catItem.appendChild(name);
+      this.catListDiv.appendChild(catItem);
+    });
+
+    // Click event for selecting a cat
+    this.catListDiv.addEventListener("click", (e) => {
+      const catItem = e.target.closest(".cat");
+      if (catItem) {
+        const catIndex = Number(catItem.dataset.id);
+        onCatSelected(catIndex);
+      }
+    });
+  }
+
+  renderCatDetails(cat, onImageClick) {
+    this.catShow.innerHTML = "";
     if (!cat) return;
 
-    //If found we first clear out the previous cat that was inside of the container
-    catShow.innerHTML = "";
-    //We add the click
-    cat.counter++;
-    //Create the elements
     const name = document.createElement("h1");
     const counter = document.createElement("p");
     const img = document.createElement("img");
@@ -49,47 +76,46 @@ catDiv.addEventListener("click", (event) => {
     name.textContent = cat.name;
     counter.textContent = `Clicks: ${cat.counter}`;
     img.src = cat.image;
-    img.style.width = "150px";
     img.alt = cat.name;
+    img.style.width = "150px";
 
-    catShow.appendChild(name);
-    catShow.appendChild(counter);
-    catShow.appendChild(img);
-  }
-});
+    img.addEventListener("click", onImageClick);
 
-//MVC part
-
-//Model part
-class CatModel {
-  constructor() {
-    this.cats = [];
-  }
-  getAllCats() {
-    return this.cats;
-  }
-  updateCat() {
-    //TODO: Get the new info and update the cat accordingly
+    this.catShow.appendChild(name);
+    this.catShow.appendChild(counter);
+    this.catShow.appendChild(img);
   }
 }
 
-//View part
-class CatView {
-  renderCats() {}
-  getUserData() {
-    //Data we will use in the future to change the properties of a cat
-  }
-}
-//Controller Part
+//Controller part
 class CatController {
   constructor(model, view) {
     this.model = model;
     this.view = view;
   }
-  showCats() {
-    //TODO: Get the array and render the cats
+
+  init() {
+    this.view.renderCatList(this.model.getAllCats(), (index) =>
+      this.selectCat(index),
+    );
   }
-  changeCat() {
-    //TODO: Update the cat and then render the new cats
+
+  selectCat(index) {
+    this.model.setSelectedCat(index);
+    this.view.renderCatDetails(this.model.getSelectedCat(), () =>
+      this.incrementCat(),
+    );
+  }
+
+  incrementCat() {
+    this.model.incrementCounter();
+    this.view.renderCatDetails(this.model.getSelectedCat(), () =>
+      this.incrementCat(),
+    );
   }
 }
+//Start the app
+document.addEventListener("DOMContentLoaded", () => {
+  const app = new CatController(new CatModel(), new CatView());
+  app.init();
+});
